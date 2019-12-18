@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Hello World</title>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+		<script type="text/javascript">
+
+			window.onload = () => window.app = new Vue(
+			{
+				el: '#app',
+				data:
+				{
+					checkInterval: 1000,
+					greeting: "Server Online!",
+					status:
+					{
+						querystring:
+						{
+							checkCount: 0
+						}
+					}
+				},
+				mounted()
+				{
+					this.loadStatus();
+				},
+				computed:
+				{
+					freeMemory()
+					{
+						return (this.status.freemem && this.status.totalmem) ? (this.status.freemem / this.status.totalmem * 100).toFixed() + "%" : "loading...";
+					}
+				},
+				methods:
+				{
+					async loadStatus()
+					{
+						this.status = await fetch(`/api/status.json?checkCount=${++this.status.querystring.checkCount}`).then(o=>o.json());
+						if (this.checkInterval) window.setTimeout(this.loadStatus, this.checkInterval);
+					}
+				}
+			});
+
+		</script>
+		<style type="text/css">
+
+		</style>
+	</head>
+	<body>
+		<div id="app">
+			<h1>{{greeting}}</h1>
+			<div>Free Memory: {{freeMemory}}</div>
+			<div>CPUs:</div>
+			<ul>
+				<li v-for="(cpu) in status.cpus">
+					{{cpu.model}} @ {{cpu.speed}}
+					<ul>
+						<li v-for="(v,k) in cpu.times">{{k}}: {{v}}</li>
+					</ul>
+				</li>
+				
+				
+			</ul>
+		</div>
+	
+	</body>
+</html>

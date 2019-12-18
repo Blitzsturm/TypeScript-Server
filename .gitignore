@@ -1,0 +1,8 @@
+# Node build artifacts
+node_modules
+package-lock.json
+*.tmp
+
+# Generated Content
+tmp/*
+lib/*

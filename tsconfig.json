@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "module": "commonjs",
+        "outDir": "./lib/",
+        "rootDir": "./src/",
+        "target": "esnext",
+        "typeRoots": [
+            "./node_modules/@types"
+        ]
+    }
+}
