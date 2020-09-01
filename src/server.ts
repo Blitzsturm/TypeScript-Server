@@ -27,7 +27,7 @@ export function createServer()
 	app.use("/", express.static("public",
 	{
 		extensions: ["htm", "html"],
-		index: "index.htm"
+		index: "index.html"
 	}));
 	
 	var server: Server = app.listen(process.env.PORT || 80, () => console.log(`Worker ${process.pid} listening on port ${process.env.PORT || 80}`));
