@@ -1,10 +1,10 @@
 import * as os from "os";
-import * as server from "./server";
+import server from "./server";
 
 Main().catch(console.error);
 async function Main()
 {
-	var app = server.createServer();
+	var app = server.create();
 	
 	app.get("/api/status.json", (req, res) =>
 	{
