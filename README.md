@@ -11,7 +11,7 @@ Intended as quick jump-point to create TypeScript based web apps, but configured
 - Should be friendly for extreme beginners to node or TypeScript
   - See [tsconfig documentation](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html) for compiler settings
   - See [package.json documentation](https://docs.npmjs.com/files/package.json) for run-time settings
-  - Just run the start.bat for easy start-up, defaults to port http://localhost:80, configure as desired
+  - Just run the start.bat for easy start-up, defaults to port http://localhost:3000, configure as desired
 - Check the content of the src folder to get started on server side code
   - app is the server pre-configuration
   - index is the main code file you'll add to
