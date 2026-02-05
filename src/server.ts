@@ -8,13 +8,16 @@ import { Server } from "http";
 
 export function createServer()
 {
+	process.env.PORT ??= "3000";
+	process.env.SESSION_SECRET ??= "PDq*zVlX6e78T3!U4ToVGuM5d3&t*ZaM";
+
 	// Configure express
 	const app = express();
 	app.set("x-powered-by", "Some kind of server");
 	app.use(bodyParser.urlencoded({limit: "1mb", extended: true}));
 	//app.use(bodyParser.json({limit: "1mb"}));
 	app.use(cookieParser());
-	app.use(expressSession({secret: process.env.SESSION_SECRET || "PDq*zVlX6e78T3!U4ToVGuM5d3&t*ZaM", resave: true, saveUninitialized: true}));
+	app.use(expressSession({secret: process.env.SESSION_SECRET, resave: true, saveUninitialized: true}));
 	app.use(compression());
 	app.use(ServerSideEvents);
 	app.use((req: express.Request, res: express.Response, nxt : express.NextFunction) =>
@@ -30,11 +33,11 @@ export function createServer()
 		index: "index.html"
 	}));
 	
-	var server: Server = app.listen(process.env.PORT || 80, () => console.log(`Worker ${process.pid} listening on port ${process.env.PORT || 80}`));
+	var server: Server = app.listen(process.env.PORT, () => console.log(`Worker ${process.pid} listening on port ${process.env.PORT}`));
 
 	safeShutdown(10000, async () =>
 	{
-		await new Promise((r : () => void) => server.close(r));
+		await new Promise(r => server.close(r));
 		// << Close any database connections or other resources
 	});
 	

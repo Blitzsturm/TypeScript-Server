@@ -2,6 +2,11 @@
 
 Intended as quick jump-point to create TypeScript based web apps, but configured to accept JS as well without breaking
 
+- Requires
+  - Node.js
+  - NPM
+  - Typescript (npm install typescript -g)
+  - An open port (defaults to 3000)
 - Includes all the standard web server stuff you can add to or remove
 - Should be friendly for extreme beginners to node or TypeScript
   - See [tsconfig documentation](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html) for compiler settings
