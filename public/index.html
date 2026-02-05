@@ -1,67 +1,164 @@
-<!doctype html>
-<html>
-	<head>
-		<title>Hello World</title>
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
-		<script type="text/javascript">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Status</title>
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --card-bg: #fff;
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --border-radius: 8px;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1e1e1e;
+                --text-color: #e0e0e0;
+                --card-bg: #2d2d2d;
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        #app {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+        .stat-label {
+            font-weight: 600;
+        }
+        .cpu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .cpu-item {
+            background: rgba(128, 128, 128, 0.1);
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+        .cpu-header {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .cpu-times {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.9rem;
+            font-family: monospace;
+            opacity: 0.8;
+        }
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <h1>{{ greeting }}</h1>
+        
+        <div class="card">
+            <div class="stat-row">
+                <span class="stat-label">Free Memory:</span>
+                <span>{{ freeMemory }}</span>
+            </div>
+        </div>
 
-			window.onload = () => window.app = new Vue(
-			{
-				el: '#app',
-				data:
-				{
-					checkInterval: 1000,
-					greeting: "Server Online!",
-					status:
-					{
-						querystring:
-						{
-							checkCount: 0
-						}
-					}
-				},
-				mounted()
-				{
-					this.loadStatus();
-				},
-				computed:
-				{
-					freeMemory()
-					{
-						return (this.status.freemem && this.status.totalmem) ? (this.status.freemem / this.status.totalmem * 100).toFixed() + "%" : "loading...";
-					}
-				},
-				methods:
-				{
-					async loadStatus()
-					{
-						this.status = await fetch(`/api/status.json?checkCount=${++this.status.querystring.checkCount}`).then(o=>o.json());
-						if (this.checkInterval) window.setTimeout(this.loadStatus, this.checkInterval);
-					}
-				}
-			});
+        <div class="card" v-if="status && status.cpus">
+            <div class="stat-row" style="margin-bottom: 1rem;">
+                <span class="stat-label">CPUs</span>
+                <span>({{ status.cpus.length }})</span>
+            </div>
+            <ul class="cpu-list">
+                <li v-for="(cpu, index) in status.cpus" :key="index" class="cpu-item">
+                    <span class="cpu-header">{{ cpu.model }} @ {{ cpu.speed }} MHz</span>
+                    <div class="cpu-times">
+                        <span v-for="(v, k) in cpu.times" :key="k">
+                            {{ k }}: {{ v }}
+                        </span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div v-else class="card">
+             Loading server status...
+        </div>
+    </div>
 
-		</script>
-		<style type="text/css">
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
 
-		</style>
-	</head>
-	<body>
-		<div id="app">
-			<h1>{{greeting}}</h1>
-			<div>Free Memory: {{freeMemory}}</div>
-			<div>CPUs:</div>
-			<ul>
-				<li v-for="(cpu) in status.cpus">
-					{{cpu.model}} @ {{cpu.speed}}
-					<ul>
-						<li v-for="(v,k) in cpu.times">{{k}}: {{v}}</li>
-					</ul>
-				</li>
-				
-				
-			</ul>
-		</div>
-	
-	</body>
+        createApp({
+            setup() {
+                const greeting = ref("Server Online!");
+                const status = ref({});
+                const checkCount = ref(0);
+                const checkInterval = 1000;
+
+                const freeMemory = computed(() => {
+                    const s = status.value;
+                    if (s && s.freemem && s.totalmem) {
+                        return (s.freemem / s.totalmem * 100).toFixed(0) + "%";
+                    }
+                    return "loading...";
+                });
+
+                const loadStatus = async () => {
+                    try {
+                        checkCount.value++;
+                        // Using a unique query param to avoid caching
+                        const response = await fetch(`/api/status.json?checkCount=${checkCount.value}`);
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        status.value = await response.json();
+                    } catch (e) {
+                        console.error("Failed to load status", e);
+                    }
+                    
+                    if (checkInterval) {
+                        setTimeout(loadStatus, checkInterval);
+                    }
+                };
+
+                onMounted(() => {
+                    loadStatus();
+                });
+
+                return {
+                    greeting,
+                    status,
+                    freeMemory
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
 </html>
